@@ -25,6 +25,7 @@ class TagQuerySet(models.QuerySet):
     def popular(self):
         ordered_tags = self.annotate(Count('posts')).order_by('-posts__count')
         return ordered_tags
+
     def fetch_posts_count(self):
         return self.annotate(posts_count=Count('posts'))
 
@@ -35,9 +36,6 @@ class Post(models.Model):
     slug = models.SlugField('Название в виде url', max_length=200)
     image = models.ImageField('Картинка')
     published_at = models.DateTimeField('Дата и время публикации')
-
-    objects = PostQuerySet.as_manager()
-
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -53,29 +51,22 @@ class Post(models.Model):
         related_name='posts',
         verbose_name='Теги')
 
+    objects = PostQuerySet.as_manager()
+
+    class Meta:
+        ordering = ['-published_at']
+        verbose_name = 'пост'
+        verbose_name_plural = 'посты'
+    
     def __str__(self):
         return self.title
 
     def get_absolute_url(self):
         return reverse('post_detail', args={'slug': self.slug})
 
-    class Meta:
-        ordering = ['-published_at']
-        verbose_name = 'пост'
-        verbose_name_plural = 'посты'
-
 
 class Tag(models.Model):
     title = models.CharField('Тег', max_length=20, unique=True)
-
-    def __str__(self):
-        return self.title
-
-    def clean(self):
-        self.title = self.title.lower()
-
-    def get_absolute_url(self):
-        return reverse('tag_filter', args={'tag_title': self.slug})
 
     objects = TagQuerySet.as_manager()
 
@@ -83,6 +74,15 @@ class Tag(models.Model):
         ordering = ['title']
         verbose_name = 'тег'
         verbose_name_plural = 'теги'
+
+    def __str__(self):
+        return self.title
+
+    def get_absolute_url(self):
+        return reverse('tag_filter', args={'tag_title': self.slug})
+    
+    def clean(self):
+        self.title = self.title.lower()
 
 
 class Comment(models.Model):
@@ -99,10 +99,10 @@ class Comment(models.Model):
     text = models.TextField('Текст комментария')
     published_at = models.DateTimeField('Дата и время публикации')
 
-    def __str__(self):
-        return f'{self.author.username} under {self.post.title}'
-
     class Meta:
         ordering = ['published_at']
         verbose_name = 'комментарий'
         verbose_name_plural = 'комментарии'
+
+    def __str__(self):
+        return f'{self.author.username} under {self.post.title}'
