@@ -3,10 +3,11 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from django.db.models import Count
 
+
 class PostQuerySet(models.QuerySet):
     def popular(self):
         return self.annotate(likes_count=Count('likes')).order_by('-likes_count')
-    
+
     def fetch_with_comments_count(self):
         most_popular_posts = self
         most_popular_posts_ids = [post.id for post in most_popular_posts]
@@ -19,7 +20,7 @@ class PostQuerySet(models.QuerySet):
         for post in most_popular_posts:
             post.comments_count = posts_comments_dict.get(post.id, 0)
         return most_popular_posts
-    
+
 
 class TagQuerySet(models.QuerySet):
     def popular(self):
@@ -57,7 +58,7 @@ class Post(models.Model):
         ordering = ['-published_at']
         verbose_name = 'пост'
         verbose_name_plural = 'посты'
-    
+
     def __str__(self):
         return self.title
 
@@ -80,7 +81,7 @@ class Tag(models.Model):
 
     def get_absolute_url(self):
         return reverse('tag_filter', args={'tag_title': self.slug})
-    
+
     def clean(self):
         self.title = self.title.lower()
 
