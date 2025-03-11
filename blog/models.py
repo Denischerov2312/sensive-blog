@@ -22,8 +22,8 @@ class PostQuerySet(models.QuerySet):
             post.comments_count = posts_comments_dict.get(post.id, 0)
         return most_popular_posts
 
-    def prefetch_author_with_tags(self, quetyset):
-        return self.prefetch_related('author', Prefetch('tags', queryset=quetyset))
+    def prefetch_author_with_tags(self, queryset):
+        return self.prefetch_related('author', Prefetch('tags', queryset=queryset))
 
 
 class TagQuerySet(models.QuerySet):
