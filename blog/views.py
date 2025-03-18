@@ -52,7 +52,7 @@ def post_detail(request, slug):
                              slug=slug)
     post = get_object_or_404(Post.objects.annotate(likes_count=Count('likes')).prefetch_author_with_tags(),
                              slug=slug)
-    comments = Comment.objects.filter(post=post)
+    comments = post.comments.all()
     serialized_comments = []
     for comment in comments:
         serialized_comments.append({
