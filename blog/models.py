@@ -11,15 +11,13 @@ class PostQuerySet(models.QuerySet):
 
     def fetch_with_comments_count(self):
         most_popular_posts = self
-        most_popular_posts_ids = [post.id for post in most_popular_posts]
         posts_with_comments = (
-            self.model.objects.filter(id__in=most_popular_posts_ids)
+            self.model.objects.filter(id__in=self.values_list('id'))
                 .annotate(comments_count=Count('comments', distinct=True))
                 .prefetch_related('author')
         )
-        posts_comments_dict = dict(posts_with_comments.values_list('id', 'comments_count'))
         for post in most_popular_posts:
-            post.comments_count = posts_comments_dict.get(post.id, 0)
+            post.comments_count = posts_with_comments.get(id=post.id).comments_count
         return most_popular_posts
 
     def prefetch_author_with_tags(self):
